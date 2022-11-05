@@ -159,7 +159,7 @@ def profile_follow(request, username):
     auth = get_object_or_404(User, username=username)
     if auth != request.user:
         Follow.objects.get_or_create(user=request.user, author=auth)
-        return redirect('posts:profile', auth)
+    return redirect('posts:profile', auth)
 
 
 @login_required
