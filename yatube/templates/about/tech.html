@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Технологии{% endblock %}
+{% block content %}
+{% comment %} Колонки с отступом сверху и снизу {% endcomment %}
+<div class="row">
+  <h1>Вот что я умею:</h1>
+  {% comment %}
+    Боковой блок со списком технологий 
+    Займет всю ширину блока на мобильном
+    и 25% при размерах экрана ≥768px
+  {% endcomment %}
+  <aside class="col-12 col-md-3">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        Python
+      </li>
+      <li class="list-group-item">
+        Django
+      </li>
+    </ul>
+  </aside>
+  {% comment %}
+    Статья  
+    Займет всю ширину блока на мобильном
+    и 75% при размерах экрана ≥768px
+  {% endcomment %}
+  <article class="col-12 col-md-9">
+    <p>
+      <h1>Я знаю основы Python</h1>
+      <ol>
+        <li>Циклы и ветвления</li>
+        <li>Функции </li>
+        <li>Словари и множества </li>
+        <li>Строки и форматирование </li>
+        <li>Библиотеки </li>
+        <li>Протокол HTTP </li>
+        <li>Сетевые запросы </li>
+      </ol>
+    </p>
+
+    <p>
+      <h1>Я умею работать с Django</h1>
+      <ol>
+        <li>Базы данных</li>
+        <li>Самое необходимое об ООП</li>
+        <li>Знакомство с командной строкой</li>
+        <li>Настройка окружения: VSCode, Git, venv, pytest</li>
+        <li>Требования к коду</li>
+        <li>Аннотации типов</li>
+        <li>Django: создаём проект</li>
+        <li>Django: urls и views</li>
+        <li>Верстка для бэкендера</li>
+        <li>Шаблоны и теги Django</li>
+        <li>База данных и Django ORM</li>
+        <li>Финальный проект спринта: сообщества</li>
+        <li>Django ORM</li>
+        <li>Управление пользователями</li>
+        <li>Декораторы</li>
+        <li>Дополнительные компоненты Django</li>
+        <li>Финальный проект спринта: новые записи</li>
+
+      </ol>
+    </p>
+  </article>
+  
+</div>
+{% endblock %} 

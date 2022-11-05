@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %} Пост {{ post|truncatechars:30 }} {% endblock %} 
+{% block content %}
+    {% include 'includes/detail_publications.html'%}
+{% endblock %}
