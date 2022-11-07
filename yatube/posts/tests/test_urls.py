@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 from posts.models import Follow, Group, Post, User
@@ -30,6 +31,7 @@ class PostURLTests(TestCase):
         self.authorized_client.force_login(self.user)
         self.authorized_auth_client = Client()
         self.authorized_auth_client.force_login(self.auth_user)
+        cache.clear()
 
     def test_guest_user_posts_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон.
@@ -78,11 +80,12 @@ class PostURLTests(TestCase):
 
     def test_guest_user_url_exists_at_desired_location(self):
         """Проверка доступности страниц для неавторизованного пользователя."""
-        address_data = ('/',
-                        f'/group/{self.group.slug}/',
-                        f'/profile/{self.user.username}/',
-                        f'/posts/{self.post.pk}/',
-                        )
+        address_data = (
+            '/',
+            f'/group/{self.group.slug}/',
+            f'/profile/{self.user.username}/',
+            f'/posts/{self.post.pk}/',
+        )
         for address in address_data:
             with self.subTest(address=address):
                 response = self.guest_client.get(address)
@@ -90,12 +93,13 @@ class PostURLTests(TestCase):
 
     def test_authorized_user_url_exists_at_desired_location(self):
         """Проверка доступности страниц для авторизованного пользователя."""
-        address_data = ('/',
-                        f'/group/{self.group.slug}/',
-                        f'/profile/{self.user.username}/',
-                        f'/posts/{self.post.pk}/',
-                        '/create/',
-                        )
+        address_data = (
+            '/',
+            f'/group/{self.group.slug}/',
+            f'/profile/{self.user.username}/',
+            f'/posts/{self.post.pk}/',
+            '/create/',
+        )
         for address in address_data:
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
@@ -103,13 +107,14 @@ class PostURLTests(TestCase):
 
     def test_authorized_user_url_exists_at_desired_location(self):
         """Проверка доступности страниц для автора поста."""
-        address_data = ('/',
-                        f'/group/{self.group.slug}/',
-                        f'/profile/{self.user.username}/',
-                        f'/posts/{self.post.pk}/',
-                        '/create/',
-                        f'/posts/{self.post.pk}/edit/',
-                        )
+        address_data = (
+            '/',
+            f'/group/{self.group.slug}/',
+            f'/profile/{self.user.username}/',
+            f'/posts/{self.post.pk}/',
+            '/create/',
+            f'/posts/{self.post.pk}/edit/',
+        )
         for address in address_data:
             with self.subTest(address=address):
                 response = self.authorized_auth_client.get(address)
@@ -134,7 +139,8 @@ class PostURLTests(TestCase):
         пользователя на страницу авторизации.
         """
         response = self.guest_client.get(
-            f'/posts/{self.post.pk}/edit/', follow=True)
+            f'/posts/{self.post.pk}/edit/', follow=True
+        )
         self.assertRedirects(response, '/auth/login/?next=/posts/1/edit/')
 
     def test_edit_url_redirect_autenficated_on_post_detail(self):
@@ -142,7 +148,8 @@ class PostURLTests(TestCase):
         пользователя на страницу поста без возможности редактирования.
         """
         response = self.authorized_client.get(
-            f'/posts/{self.post.pk}/edit/', follow=True)
+            f'/posts/{self.post.pk}/edit/', follow=True
+        )
         self.assertRedirects(response, f'/posts/{self.post.pk}/')
 
 
@@ -160,20 +167,27 @@ class FollowTests(TestCase):
         self.user = User.objects.create_user(username='New_user')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     def test_autorized_user_try_following_to_author(self):
         """Авторизованный user может подписываться на других авторов.
         Авторизованный user может удалять авторов из подписок."""
         follow_count = Follow.objects.count()
-        follow_response = (self.authorized_client.
-                           get(reverse('posts:profile_follow',
-                               kwargs={'username': self.auth_user.username})))
+        follow_response = self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.auth_user.username},
+            )
+        )
         self.assertEqual(Follow.objects.count(), follow_count + 1)
-        self.assertRedirects(follow_response,
-                             f'/profile/{self.auth_user.username}/')
-        unfollow_response = (self.authorized_client.
-                             get(reverse('posts:profile_unfollow',
-                                 kwargs={'username':
-                                         self.auth_user.username})))
+        self.assertRedirects(
+            follow_response, f'/profile/{self.auth_user.username}/'
+        )
+        unfollow_response = self.authorized_client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': self.auth_user.username},
+            )
+        )
         self.assertEqual(Follow.objects.count(), follow_count)
         self.assertRedirects(unfollow_response, '/follow/')

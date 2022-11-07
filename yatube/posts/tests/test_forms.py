@@ -62,13 +62,13 @@ class PostFormTests(TestCase):
             b'\x0A\x00\x3B'
         )
         uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
+            name='small.gif', content=small_gif, content_type='image/gif'
         )
-        form_data = {'text': 'Тестовый пост 2',
-                     'group': self.group.id,
-                     'image': uploaded}
+        form_data = {
+            'text': 'Тестовый пост 2',
+            'group': self.group.id,
+            'image': uploaded,
+        }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
@@ -85,7 +85,7 @@ class PostFormTests(TestCase):
         """Создание поста только для аутенфицированного пользователя."""
         response = self.guest_client.post(
             reverse('posts:post_create'),
-            data={'text': 'Анонимно создаем пост'}
+            data={'text': 'Анонимно создаем пост'},
         )
         expected_page = reverse('users:login')
         start_page = reverse('posts:post_create')
@@ -94,28 +94,35 @@ class PostFormTests(TestCase):
     def test_authenticated_user_post_edit(self):
         """Валидная форма редактирует запись post_id и сохраняет ее в БД.
         Запись редактируется вне зависимости от указания группы."""
-        form_data = ({'text': 'Первично обновленный текст поста',
-                      'group': self.group.id},
-                     {'text': 'Вторично обновленный текст поста'},)
+        form_data = (
+            {
+                'text': 'Первично обновленный текст поста',
+                'group': self.group.id,
+            },
+            {'text': 'Вторично обновленный текст поста'},
+        )
         for form in form_data:
             with self.subTest(form=form):
                 response = self.authorized_auth_client.post(
-                    reverse('posts:post_edit',
-                            kwargs={'post_id': self.post.pk}),
+                    reverse(
+                        'posts:post_edit', kwargs={'post_id': self.post.pk}
+                    ),
                     data=form,
-                    follow=True
+                    follow=True,
                 )
-                self.assertRedirects(response,
-                                     reverse('posts:post_detail',
-                                             kwargs={'post_id': self.post.pk}))
+                self.assertRedirects(
+                    response,
+                    reverse(
+                        'posts:post_detail', kwargs={'post_id': self.post.pk}
+                    ),
+                )
         post = Post.objects.first()
         self.assertEqual(post.text, form_data[1]['text'])
 
     def test_authenticated_non_author_try_edit_post(self):
         """Страница редактирования поста доступна только для его автора."""
         response = self.authorized_client.post(
-            reverse('posts:post_edit',
-                    kwargs={'post_id': self.post.pk}),
+            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}),
             data={'text': 'Вносим правки в чужой пост'},
         )
         self.assertIsNone(response.context)
@@ -134,13 +141,13 @@ class PostFormTests(TestCase):
             b'\x0A\x00\x3B'
         )
         uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
+            name='small.gif', content=small_gif, content_type='image/gif'
         )
-        form_data = {'text': 'Тестовый пост 3',
-                     'group': self.group.id,
-                     'image': uploaded}
+        form_data = {
+            'text': 'Тестовый пост 3',
+            'group': self.group.id,
+            'image': uploaded,
+        }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
@@ -153,12 +160,13 @@ class PostFormTests(TestCase):
         """Валидная форма создает новый комментарий и сохраняет его в БД.
         Комментарий создается аутенфицированным пользователем."""
         comments_count = Comment.objects.count()
-        form_data = {'post': self.post,
-                     'author': self.user,
-                     'text': 'Тестовый комментарий 2'}
+        form_data = {
+            'post': self.post,
+            'author': self.user,
+            'text': 'Тестовый комментарий 2',
+        }
         response = self.authorized_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.pk}),
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
             data=form_data,
             follow=True,
         )
@@ -169,21 +177,24 @@ class PostFormTests(TestCase):
         self.assertEqual(comment.post, self.post)
         self.assertEqual(comment.author, self.user)
         self.assertIn('comments', response.context)
-        self.assertEqual(response.context['comments'][1].text,
-                         self.comment.text)
+        self.assertEqual(
+            response.context['comments'][1].text, self.comment.text
+        )
 
     def test_guest_user_try_comment_post(self):
         """Комментировать посты может только аутенфиц. пользователь."""
-        form_data = {'post': self.post,
-                     'author': self.user,
-                     'text': 'Тестовый комментарий 3'}
+        form_data = {
+            'post': self.post,
+            'author': self.user,
+            'text': 'Тестовый комментарий 3',
+        }
         response = self.guest_client.post(
-            reverse('posts:add_comment',
-                    kwargs={'post_id': self.post.pk}),
+            reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
             data=form_data,
             follow=True,
         )
         expected_page = reverse('users:login')
-        start_page = reverse('posts:add_comment',
-                             kwargs={'post_id': self.post.pk})
+        start_page = reverse(
+            'posts:add_comment', kwargs={'post_id': self.post.pk}
+        )
         self.assertRedirects(response, f'{expected_page}?next={start_page}')

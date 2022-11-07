@@ -7,7 +7,6 @@ User = get_user_model()
 
 
 class UserFormTests(TestCase):
-
     def setUp(self):
         self.guest_client = Client()
 
@@ -24,14 +23,12 @@ class UserFormTests(TestCase):
             'password1': 'ivan1234',
             'password2': 'ivan1234',
         }
-        self.guest_client.post(reverse('users:signup'),
-                               data=form_data,
-                               follow=True)
+        self.guest_client.post(
+            reverse('users:signup'), data=form_data, follow=True
+        )
         last_user = User.objects.last()
         self.assertEqual(User.objects.count(), users_count + 1)
         self.assertEqual(last_user.username, form_data['username'])
         self.assertEqual(last_user.email, form_data['email'])
-        self.assertEqual(last_user.first_name,
-                         form_data['first_name'])
-        self.assertEqual(last_user.last_name,
-                         form_data['last_name'])
+        self.assertEqual(last_user.first_name, form_data['first_name'])
+        self.assertEqual(last_user.last_name, form_data['last_name'])

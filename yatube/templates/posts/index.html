@@ -1,12 +1,9 @@
 {% extends 'base.html' %}
-{% block title %} Последние обновления на сайте {% endblock %} 
+{% block title %} Последние обновления на сайте {% endblock %}
 {% block content %}
-    {% include 'posts/includes/switcher.html' %}
-    {% load cache %}
-    {% cache 20 index_page %}
-      {% for post in page_obj %}
-        {% include 'includes/publications.html' with pub_group=True %}
-      {% endfor %}
-    {% endcache %}
-    {% include 'posts/includes/paginator.html' %}
+  {% include 'posts/includes/switcher.html' %}
+  {% for post in page_obj %}
+    {% include 'includes/publications.html' with pub_group=True %}
+  {% endfor %}
+  {% include 'posts/includes/paginator.html' %}
 {% endblock %}

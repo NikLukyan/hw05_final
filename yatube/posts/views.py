@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.cache import cache_page
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
@@ -13,8 +14,9 @@ def my_paginator(request, list_name, num_on_page):
     return paginator.get_page(page_number)
 
 
+@cache_page(20, key_prefix='index_page')
 def index(request):
-    """ Function index make selection of 10 posts,
+    """Function index make selection of 10 posts,
     create content and return home page (index.html) with context
     """
     post_list = Post.objects.select_related("author", "group")
@@ -33,7 +35,7 @@ def group_posts(request, slug):
     posts = group_post.posts.select_related('author', 'group')
     context = {
         'group': group_post,
-        'page_obj': my_paginator(request, posts, settings.POSTS_PER_GROUP)
+        'page_obj': my_paginator(request, posts, settings.POSTS_PER_GROUP),
     }
     return render(request, 'posts/group_list.html', context)
 
@@ -44,18 +46,17 @@ def profile(request, username):
     """
     auth = get_object_or_404(User, username=username)
     auth_post_list = auth.posts.select_related('author', 'group')
-    following = False
-    if not request.user:
-        following = Follow.objects.filter(
-            user=request.user,
-            author=auth).exists()
+    is_following = (
+        request.user.is_authenticated
+        and Follow.objects.filter(user=request.user, author=auth).exists()
+    )
     context = {
-        'page_obj': my_paginator(request,
-                                 auth_post_list,
-                                 settings.POSTS_PER_PAGE),
+        'page_obj': my_paginator(
+            request, auth_post_list, settings.POSTS_PER_PAGE
+        ),
         'author': auth,
-        'following': following,
-        'user': request.user
+        'following': is_following,
+        'user': request.user,
     }
     return render(request, 'posts/profile.html', context)
 
@@ -67,7 +68,7 @@ def post_detail(request, post_id):
     information of post with num of post_id.
     """
     post_id_detail = get_object_or_404(Post, pk=post_id)
-    form = CommentForm(request.POST or None)
+    form = CommentForm()
     comments_list = post_id_detail.comments.all()
     context = {
         'post': post_id_detail,
@@ -104,9 +105,8 @@ def post_edit(request, post_id):
     if unique_post.author != request.user:
         return redirect('posts:post_detail', post_id)
     form = PostForm(
-        request.POST or None,
-        files=request.FILES or None,
-        instance=unique_post)
+        request.POST or None, files=request.FILES or None, instance=unique_post
+    )
     if form.is_valid():
         form.save()
         return redirect('posts:post_detail', post_id)
@@ -138,17 +138,9 @@ def add_comment(request, post_id):
 def follow_index(request):
     """Function displays the posts of authors
     to which the current user is subscribed."""
-    # unique_user = get_object_or_404(User, username=request.user)
-    auth_list = Follow.objects.filter(user=request.user)
-    new_list = []
-    for auth in auth_list:
-        unique_auth = get_object_or_404(User, username=auth)
-        post_auth_list = (Post.objects.
-                          filter(author=unique_auth).
-                          select_related("author", "group"))
-        new_list += post_auth_list
+    post_list = Post.objects.filter(author__following__user=request.user)
     context = {
-        'page_obj': my_paginator(request, new_list, settings.POSTS_PER_PAGE),
+        'page_obj': my_paginator(request, post_list, settings.POSTS_PER_PAGE),
     }
     return render(request, 'posts/follow.html', context)
 
@@ -157,8 +149,11 @@ def follow_index(request):
 def profile_follow(request, username):
     """Function help to subscribe the user to author."""
     auth = get_object_or_404(User, username=username)
-    if auth != request.user:
-        Follow.objects.get_or_create(user=request.user, author=auth)
+    if not (
+        Follow.objects.filter(user=request.user, author=auth).exists()
+        and auth != request.user
+    ):
+        Follow.objects.create(user=request.user, author=auth)
     return redirect('posts:profile', auth)
 
 
@@ -166,5 +161,6 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     """Function help to unsubscribe the user to author."""
     author = get_object_or_404(User, username=username)
-    Follow.objects.get(user=request.user, author=author).delete()
+    if Follow.objects.filter(user=request.user, author=author).exists():
+        Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:follow_index')

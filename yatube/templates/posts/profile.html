@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% block title %} Профайл пользователя {{ author.get_full_name }} {% endblock %} 
+{% block title %} Профайл пользователя {{ author.get_full_name }} {% endblock %}
 {% block content %}
-    {% if user != author %}
-      {% include 'includes/profile_header.html'%}
-    {% endif %}
-  {% for post in page_obj %}    
-    {% include 'includes/profile_publications.html'%}  
+  {% if user != author %}
+    {% include 'includes/profile_header.html'%}
+  {% endif %}
+  {% for post in page_obj %}
+    {% include 'includes/profile_publications.html'%}
   {% endfor %}
   {% include 'posts/includes/paginator.html' %}
 {% endblock %}

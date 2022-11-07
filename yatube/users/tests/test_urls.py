@@ -41,8 +41,9 @@ class UserURLTests(TestCase):
         for address, template in self.templates_url_names.items():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
-                self.assertTemplateUsed(response, template,
-                                        ('Ошибка адреса и шаблона'))
+                self.assertTemplateUsed(
+                    response, template, ('Ошибка адреса и шаблона')
+                )
 
     def test_guest_user_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон.
@@ -96,16 +97,18 @@ class UserURLTests(TestCase):
         """Страница смены пароля перенаправит анонимного
         пользователя на страницу авторизации.
         """
-        response = self.guest_client.get(
-            '/auth/password_change/', follow=True)
-        self.assertRedirects(response,
-                             '/auth/login/?next=/auth/password_change/')
+        response = self.guest_client.get('/auth/password_change/', follow=True)
+        self.assertRedirects(
+            response, '/auth/login/?next=/auth/password_change/'
+        )
 
     def test_password_change_done_url_redirect_anonymous_on_admin_login(self):
         """Страница подтверждения смены пароля перенаправит анонимного
         пользователя на страницу авторизации.
         """
         response = self.guest_client.get(
-            '/auth/password_change/done/', follow=True)
-        self.assertRedirects(response,
-                             '/auth/login/?next=/auth/password_change/done/')
+            '/auth/password_change/done/', follow=True
+        )
+        self.assertRedirects(
+            response, '/auth/login/?next=/auth/password_change/done/'
+        )

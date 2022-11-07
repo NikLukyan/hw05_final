@@ -20,18 +20,21 @@ class UserPagesTests(TestCase):
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый пост из группы Дневник',
-            group=cls.group
+            group=cls.group,
         )
         cls.pages_names_templates = {
             reverse('users:logout'): 'users/logged_out.html',
             reverse('users:signup'): 'users/signup.html',
             reverse('users:login'): 'users/login.html',
-            reverse('users:password_reset_form'):
-                'users/password_reset_form.html',
-            reverse('users:password_reset_done'):
-                'users/password_reset_done.html',
-            reverse('users:password_reset_complete'):
-                'users/password_reset_complete.html',
+            reverse(
+                'users:password_reset_form'
+            ): 'users/password_reset_form.html',
+            reverse(
+                'users:password_reset_done'
+            ): 'users/password_reset_done.html',
+            reverse(
+                'users:password_reset_complete'
+            ): 'users/password_reset_complete.html',
         }
 
     def setUp(self):
@@ -63,7 +66,7 @@ class UserPagesTests(TestCase):
             'first_name': forms.fields.CharField,
             'last_name': forms.fields.CharField,
             'username': forms.fields.CharField,
-            'email': forms.fields.EmailField
+            'email': forms.fields.EmailField,
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):

@@ -27,19 +27,15 @@ class PostAdmin(admin.ModelAdmin):
 admin.site.register(Group)
 
 
+@admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'post', 'author', 'text', 'created')
     list_filter = ('created', 'author')
     search_fields = ('post', 'author', 'text')
 
 
-admin.site.register(Comment, CommentAdmin)
-
-
+@admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('user', 'author')
     list_filter = ('user', 'author')
     search_fields = ('user', 'author')
-
-
-admin.site.register(Follow, FollowAdmin)
