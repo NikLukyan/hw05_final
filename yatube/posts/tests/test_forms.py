@@ -48,6 +48,7 @@ class PostFormTests(TestCase):
         self.user = User.objects.create_user(username='New_user')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
     def test_authenticated_user_post_create(self):
         """Валидная форма создает новую запись Post и сохраняет ее в БД.
@@ -80,6 +81,7 @@ class PostFormTests(TestCase):
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group, self.group)
         self.assertEqual(post.author, self.user)
+        self.assertEqual(post.image, f"posts/{form_data['image']}")
 
     def test_guest_user_try_create_post(self):
         """Создание поста только для аутенфицированного пользователя."""
@@ -155,6 +157,8 @@ class PostFormTests(TestCase):
         )
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertEqual(Post.objects.count(), posts_count + 1)
+        post = Post.objects.first()
+        self.assertEqual(post.image, f"posts/{form_data['image']}")
 
     def test_authenticated_user_add_comment(self):
         """Валидная форма создает новый комментарий и сохраняет его в БД.

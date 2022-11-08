@@ -84,9 +84,8 @@ def post_create(request):
     Function create new post. It's available only
     for autenficated users.
     """
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None, files=request.FILES or None)
     if request.method == 'POST':
-        form = PostForm(request.POST or None)
         if form.is_valid():
             post = form.save(commit=False)
             post.author = request.user
