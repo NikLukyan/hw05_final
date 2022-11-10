@@ -1,0 +1,60 @@
+# https://pre-commit.com/
+# Установка:
+#   заходим в каталог с проектом и выполняем `pip install pre-commit`
+#   рядом с setup.cfg создаем файл `.pre-commit-config.yaml` с содержимым этого файла
+# Запуск полного сканирования:
+#   из корня проекта запускаем команду `pre-commit run --all-files`
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/isort
+    rev: 5.5.2
+    hooks:
+    -   id: isort
+        args: [--project, 'core,posts,about,users']
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        language_version: python3
+        exclude: ^tests/
+        args: [-S, -t, py37, --line-length, '79']
+  - repo: https://gitlab.com/PyCQA/flake8
+    rev: 4.0.1
+    hooks:
+      - id: flake8
+        exclude: 'tests/'
+        additional_dependencies:
+          - pyproject-flake8
+          - flake8-builtins
+          - flake8-bugbear
+          - flake8-quotes
+          - flake8-eradicate
+          - flake8-mock
+          - flake8-pie
+          - flake8-print
+          - flake8-printf-formatting
+          - flake8-pytest-style
+          - flake8-variables-names
+        # путь до каталога с конфигом
+        args: ['--config=setup.cfg']
+  - repo: https://github.com/rtts/djhtml
+    rev: v1.5.2
+    hooks:
+      - id: djhtml
+        # Indent only HTML files in template directories
+        files: .*/templates/.*\.html$
+        args: [-i, -t, '2']
+  - repo: local
+    hooks:
+      -   id: migrations
+          name: 'Checking migrations'
+          entry: python yatube/manage.py
+          language: system
+          args: [makemigrations, --dry-run, --check]
+          pass_filenames: false
+          require_serial: true
